@@ -1,13 +1,17 @@
 module Main exposing (..)
 
-import Board
+import App
+import Extra
+import Msg
 import View
 
 import Browser
 
+main : Program () App.App Msg.Msg
 main =
-    Browser.sandbox
-        { init = Board.init (10,10)
-        , update = Board.update
-        , view = View.boardView
+    Browser.element
+        { init = Extra.noCmd << always App.init
+        , update = \ msg -> Extra.noCmd << App.update msg
+        , subscriptions = App.subs
+        , view = View.appView
         }

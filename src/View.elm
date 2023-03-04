@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import App
 import Board
 import Dict
 import Msg
@@ -10,22 +11,25 @@ import Html.Events
 import Svg
 import Svg.Attributes
 
+appView : App.App -> Html.Html Msg.Msg
+appView app =
+    Html.div
+        []
+        [ Html.button [ Html.Events.onClick Msg.Solve ] [ Html.text (if app.isSolving then "Stop" else "Solve") ]
+        , boardView app.board
+        ]
+
 boardView : Board.Board -> Html.Html Msg.Msg
 boardView board =
     let
-        appView =
-            Html.div []
-                [ Html.button [ Html.Events.onClick Msg.Solve ] [ Html.text "Solve" ]
-                , Svg.svg
-                    [ Svg.Attributes.viewBox "0 0 10 10"
-                    , Svg.Attributes.width "480"
-                    , Svg.Attributes.height "480"
-                    ]
-                    [ gridView ]
-                ]
         (w,h) = board.size
-        gridView =
-            Svg.g
+    in
+        Svg.svg
+            [ Svg.Attributes.viewBox "0 0 10 10"
+            , Svg.Attributes.width "480"
+            , Svg.Attributes.height "480"
+            ]
+            [ Svg.g
                 []
                 [ Svg.defs
                     []
@@ -69,8 +73,7 @@ boardView board =
                         (List.map shotResultView <| Dict.toList board.shotResults)
                     ]
                 ]
-    in
-        appView
+            ]
 
 shipView : ((Int,Int), Board.Ship) -> Svg.Svg Msg.Msg
 shipView ((x,y),ship) =

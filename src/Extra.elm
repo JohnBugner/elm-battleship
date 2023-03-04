@@ -2,6 +2,9 @@ module Extra exposing (..)
 
 import List.Extra
 
+noCmd : a -> (a, Cmd b)
+noCmd a = (a, Cmd.none)
+
 cartesianProductPairs : List a -> List a -> List (a,a)
 cartesianProductPairs as1 as2 =
     let

@@ -39,12 +39,31 @@ shoot shotCoord board =
                     board.shotResults
             }
 
-update : Msg.Msg -> Board -> Board
-update msg board =
-    case msg of
-        Msg.Solve -> solve Strategy.LeftToRightTopToBottom board
+--update : Msg.Msg -> Board -> Board
+--update msg board =
+--    case msg of
+--        Msg.Solve -> solve Strategy.LeftToRightTopToBottom board
 
-solve : Strategy.Strategy -> Board -> Board
+--solve : Strategy.Strategy -> Board -> Board
+--solve strategy board =
+--    let
+--        maybeShotCoord : Maybe (Int,Int)
+--        maybeShotCoord = Strategy.maybeShotCoord (toOpenBoard board) strategy
+--    in
+--        -- Is the board already solved ?
+--        if isSolved board
+--        then board
+--        else
+--            -- Did the algorithm even fire a shot ?
+--            case maybeShotCoord of
+--                Just shotCoord ->
+--                    -- Has a shot already been fired at that coordinate ?
+--                    case shoot shotCoord board of
+--                        Just newBoard -> solve strategy newBoard
+--                        Nothing -> board
+--                Nothing -> board
+
+solve : Strategy.Strategy -> Board -> Maybe Board
 solve strategy board =
     let
         maybeShotCoord : Maybe (Int,Int)
@@ -52,16 +71,16 @@ solve strategy board =
     in
         -- Is the board already solved ?
         if isSolved board
-        then board
+        then Nothing
         else
             -- Did the algorithm even fire a shot ?
             case maybeShotCoord of
                 Just shotCoord ->
                     -- Has a shot already been fired at that coordinate ?
                     case shoot shotCoord board of
-                        Just newBoard -> solve strategy newBoard
-                        Nothing -> board
-                Nothing -> board
+                        Just newBoard -> Just newBoard
+                        Nothing -> Nothing
+                Nothing -> Nothing
 
 isSolved : Board -> Bool
 isSolved board = Dict.isEmpty <| Dict.diff board.ships board.shotResults
