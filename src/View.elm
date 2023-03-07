@@ -8,6 +8,7 @@ import Ship
 import ShotResult
 
 import Html
+import Html.Attributes
 import Html.Events
 import Svg
 import Svg.Attributes
@@ -16,8 +17,20 @@ appView : App.App -> Html.Html Msg.Msg
 appView app =
     Html.div
         []
-        [ Html.button [ Html.Events.onClick Msg.Solve ] [ Html.text (if app.isSolving then "Stop" else "Solve") ]
-        , boardView app.board
+        [ boardView app.board
+        ,
+            Html.div
+            []
+            [
+                Html.button
+                [ Html.Events.onClick Msg.Solve
+                , Html.Attributes.style "width" "100px"
+                , Html.Attributes.style "height" "50px"
+                ]
+                [ Html.text (if app.isSolving then "Stop" else "Solve")
+                ]
+            ]
+        , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size app.board.shotResults) ]
         ]
 
 boardView : Board.Board -> Html.Html Msg.Msg
