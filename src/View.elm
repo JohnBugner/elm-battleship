@@ -4,6 +4,7 @@ import App
 import Board
 import Dict
 import Msg
+import Ship
 import ShotResult
 
 import Html
@@ -67,7 +68,7 @@ boardView board =
                         []
                     , Svg.g
                         []
-                        (List.map shipView <| Dict.toList board.ships)
+                        (List.map shipView <| Dict.toList board.placedShips)
                     , Svg.g
                         []
                         (List.map shotResultView <| Dict.toList board.shotResults)
@@ -75,7 +76,7 @@ boardView board =
                 ]
             ]
 
-shipView : ((Int,Int), Board.Ship) -> Svg.Svg Msg.Msg
+shipView : ((Int,Int), Ship.Ship) -> Svg.Svg Msg.Msg
 shipView ((x,y),ship) =
     Svg.use
         [ Svg.Attributes.xlinkHref "#ship"
@@ -86,9 +87,16 @@ shipView ((x,y),ship) =
 
 shotResultView : ((Int,Int), ShotResult.ShotResult) -> Svg.Svg Msg.Msg
 shotResultView ((x,y),shotResult) =
-    Svg.use
-        [ Svg.Attributes.xlinkHref (ShotResult.ident shotResult)
-        , Svg.Attributes.x <| Debug.toString x
-        , Svg.Attributes.y <| Debug.toString y
-        ]
-        []
+    let
+        ident : ShotResult.ShotResult -> String
+        ident shotResult_ =
+            case shotResult_ of
+                ShotResult.Hit -> "#hit"
+                ShotResult.Miss -> "#miss"
+    in
+        Svg.use
+            [ Svg.Attributes.xlinkHref <| ident shotResult
+            , Svg.Attributes.x <| Debug.toString x
+            , Svg.Attributes.y <| Debug.toString y
+            ]
+            []

@@ -1,27 +1,26 @@
 module Board exposing (..)
 
 import Grid
-import Msg
+import Ship
 import ShotResult
 import Strategy
 import OpenBoard
 
 import Dict
+import Random
 
 type alias Board =
     { size : (Int,Int)
-    , ships : Grid.Grid Ship
+    , placedShips : Grid.Grid Ship.Ship
     , shotResults : Grid.Grid ShotResult.ShotResult
     }
 
-type Ship
-    = Ship
-
-init : (Int,Int) -> Board
-init size =
+init : (Int,Int) -> Random.Seed -> Board
+init size seed =
     { size = size
-    --, ships = Dict.empty -- fix
-    , ships = Dict.fromList [((5,5),Ship),((9,8),Ship),((7,9),Ship)]
+    , placedShips =
+        Tuple.first <|
+        Random.step (Ship.placedShipsGen size Ship.inits) seed
     , shotResults = Dict.empty
     }
 
@@ -33,38 +32,18 @@ shoot shotCoord board =
         Just 
             { board
             | shotResults =
-                Dict.insert
-                    shotCoord
-                    (if Dict.member shotCoord board.ships then ShotResult.Hit else ShotResult.Miss)
-                    board.shotResults
+                let
+                    shotResult : ShotResult.ShotResult
+                    shotResult =
+                        if Dict.member shotCoord board.placedShips
+                        then ShotResult.Hit
+                        else ShotResult.Miss
+                in
+                    Dict.insert shotCoord shotResult board.shotResults
             }
 
---update : Msg.Msg -> Board -> Board
---update msg board =
---    case msg of
---        Msg.Solve -> solve Strategy.LeftToRightTopToBottom board
-
---solve : Strategy.Strategy -> Board -> Board
---solve strategy board =
---    let
---        maybeShotCoord : Maybe (Int,Int)
---        maybeShotCoord = Strategy.maybeShotCoord (toOpenBoard board) strategy
---    in
---        -- Is the board already solved ?
---        if isSolved board
---        then board
---        else
---            -- Did the algorithm even fire a shot ?
---            case maybeShotCoord of
---                Just shotCoord ->
---                    -- Has a shot already been fired at that coordinate ?
---                    case shoot shotCoord board of
---                        Just newBoard -> solve strategy newBoard
---                        Nothing -> board
---                Nothing -> board
-
-solve : Strategy.Strategy -> Board -> Maybe Board
-solve strategy board =
+solveStep : Strategy.Strategy -> Board -> Maybe Board
+solveStep strategy board =
     let
         maybeShotCoord : Maybe (Int,Int)
         maybeShotCoord = Strategy.maybeShotCoord (toOpenBoard board) strategy
@@ -73,7 +52,7 @@ solve strategy board =
         if isSolved board
         then Nothing
         else
-            -- Did the algorithm even fire a shot ?
+            -- Did the strategy even fire a shot ?
             case maybeShotCoord of
                 Just shotCoord ->
                     -- Has a shot already been fired at that coordinate ?
@@ -83,7 +62,9 @@ solve strategy board =
                 Nothing -> Nothing
 
 isSolved : Board -> Bool
-isSolved board = Dict.isEmpty <| Dict.diff board.ships board.shotResults
+isSolved board =
+    Dict.isEmpty <|
+    Dict.diff board.placedShips board.shotResults
 
 toOpenBoard : Board -> OpenBoard.OpenBoard
 toOpenBoard board =

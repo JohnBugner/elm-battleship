@@ -4,6 +4,8 @@ import Board
 import Msg
 import Strategy
 
+import Json.Decode
+import Random
 import Time
 
 type alias App =
@@ -11,11 +13,18 @@ type alias App =
     , isSolving : Bool
     }
 
-init : App
-init =
-    { board = Board.init (10,10)
-    , isSolving = False
-    }
+init : Json.Decode.Value -> App
+init value =
+    let
+        seed : Random.Seed
+        seed =
+            Random.initialSeed <|
+            Result.withDefault 0 <|
+            Json.Decode.decodeValue Json.Decode.int value
+    in
+        { board = Board.init (10,10) seed
+        , isSolving = False
+        }
 
 update : Msg.Msg -> App -> App
 update msg app =
@@ -24,7 +33,7 @@ update msg app =
         Msg.Tick _ ->
             if app.isSolving
             then
-                case Board.solve Strategy.LeftToRightTopToBottom app.board of
+                case Board.solveStep Strategy.LeftToRightTopToBottom app.board of
                     Just newBoard -> { app | board = newBoard}
                     Nothing -> { app | isSolving = False}
             else app
