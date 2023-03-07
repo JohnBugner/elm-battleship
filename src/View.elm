@@ -26,7 +26,7 @@ boardView board =
         (w,h) = board.size
     in
         Svg.svg
-            [ Svg.Attributes.viewBox "0 0 10 10"
+            [ Svg.Attributes.viewBox <| String.join " " <| List.map Debug.toString [0,0,w,h]
             , Svg.Attributes.width "480"
             , Svg.Attributes.height "480"
             ]
