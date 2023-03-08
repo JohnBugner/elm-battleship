@@ -1,7 +1,10 @@
 module Msg exposing (..)
 
+import Strategy
+
 import Time
 
 type Msg
-    = Solve
+    = SetStrategy (Maybe Strategy.Strategy)
+    | Solve
     | Tick Time.Posix

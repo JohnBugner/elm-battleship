@@ -11,6 +11,7 @@ import Time
 type alias App =
     { board : Board.Board
     , isSolving : Bool
+    , maybeStrategy : Maybe Strategy.Strategy
     }
 
 init : Json.Decode.Value -> App
@@ -24,18 +25,23 @@ init value =
     in
         { board = Board.init (10,10) seed
         , isSolving = False
+        , maybeStrategy = Just Strategy.Ordered
         }
 
 update : Msg.Msg -> App -> App
 update msg app =
     case msg of
-        Msg.Solve -> { app | isSolving = not app.isSolving }
+        Msg.SetStrategy maybeStrategy -> { app | maybeStrategy = maybeStrategy}
+        Msg.Solve -> { app | isSolving = not app.isSolving}
         Msg.Tick _ ->
             if app.isSolving
             then
-                case Board.solveStep Strategy.LeftToRightTopToBottom app.board of
-                    Just newBoard -> { app | board = newBoard}
-                    Nothing -> { app | isSolving = False}
+                case app.maybeStrategy of
+                    Just strategy ->
+                        case Board.solveStep strategy app.board of
+                            Just newBoard -> { app | board = newBoard }
+                            Nothing -> { app | isSolving = False }
+                    Nothing -> app
             else app
 
 subs : App -> Sub Msg.Msg

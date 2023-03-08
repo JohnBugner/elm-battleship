@@ -6,10 +6,12 @@ import Dict
 import Msg
 import Ship
 import ShotResult
+import Strategy
 
 import Html
 import Html.Attributes
 import Html.Events
+import Html.Events.Extra
 import Svg
 import Svg.Attributes
 
@@ -18,11 +20,28 @@ appView app =
     Html.div
         []
         [ boardView app.board
-        ,
-            Html.div
+        , Html.div
             []
-            [
-                Html.button
+            [ Html.select
+                [ Html.Events.Extra.onChange (Msg.SetStrategy << Strategy.fromString)
+                , Html.Attributes.style "width" "100px"
+                , Html.Attributes.style "height" "50px"
+                ]
+                [ Html.option
+                    [ Html.Attributes.value "Ordered"
+                    ]
+                    [ Html.text "Ordered"
+                    ]
+                , Html.option
+                    [ Html.Attributes.value "Random"
+                    ]
+                    [ Html.text "Random"
+                    ]
+                ]
+            ]
+        , Html.div
+            []
+            [ Html.button
                 [ Html.Events.onClick Msg.Solve
                 , Html.Attributes.style "width" "100px"
                 , Html.Attributes.style "height" "50px"
