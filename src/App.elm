@@ -4,44 +4,44 @@ import Board
 import Msg
 import Strategy
 
-import Json.Decode
 import Random
 import Time
 
 type alias App =
-    { board : Board.Board
-    , isSolving : Bool
+    { maybeBoard : Maybe Board.Board
     , maybeStrategy : Maybe Strategy.Strategy
+    , isSolving : Bool
     }
 
-init : Json.Decode.Value -> App
-init value =
-    let
-        seed : Random.Seed
-        seed =
-            Random.initialSeed <|
-            Result.withDefault 0 <|
-            Json.Decode.decodeValue Json.Decode.int value
-    in
-        { board = Board.init (10,10) seed
-        , isSolving = False
-        , maybeStrategy = Just Strategy.Ordered
-        }
+init : App
+init =
+    { maybeBoard = Nothing
+    , maybeStrategy = Just Strategy.Ordered
+    , isSolving = False
+    }
 
 update : Msg.Msg -> App -> App
 update msg app =
     case msg of
-        Msg.SetStrategy maybeStrategy -> { app | maybeStrategy = maybeStrategy}
+        Msg.SetBoard time ->
+            let
+                seed : Random.Seed
+                seed = Random.initialSeed <| Time.posixToMillis time
+            in
+                { app
+                | maybeBoard = Just <| Board.init (10,10) seed
+                }
+        Msg.SetStrategy ident -> { app | maybeStrategy = Strategy.fromString ident}
         Msg.Solve -> { app | isSolving = not app.isSolving}
         Msg.Tick _ ->
             if app.isSolving
             then
-                case app.maybeStrategy of
-                    Just strategy ->
-                        case Board.solveStep strategy app.board of
-                            Just newBoard -> { app | board = newBoard }
+                case ( app.maybeBoard, app.maybeStrategy ) of
+                    ( Just board, Just strategy ) ->
+                        case Board.solveStep strategy board of
+                            Just newBoard -> { app | maybeBoard = Just newBoard }
                             Nothing -> { app | isSolving = False }
-                    Nothing -> app
+                    _ -> app
             else app
 
 subs : App -> Sub Msg.Msg

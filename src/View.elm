@@ -17,40 +17,43 @@ import Svg.Attributes
 
 appView : App.App -> Html.Html Msg.Msg
 appView app =
-    Html.div
-        []
-        [ boardView app.board
-        , Html.div
-            []
-            [ Html.select
-                [ Html.Events.Extra.onChange (Msg.SetStrategy << Strategy.fromString)
-                , Html.Attributes.style "width" "100px"
-                , Html.Attributes.style "height" "50px"
-                ]
-                [ Html.option
-                    [ Html.Attributes.value "Ordered"
+    case app.maybeBoard of
+        Nothing -> Html.div [] []
+        Just board ->
+            Html.div
+                []
+                [ boardView board
+                , Html.div
+                    []
+                    [ Html.select
+                        [ Html.Events.Extra.onChange Msg.SetStrategy
+                        , Html.Attributes.style "width" "100px"
+                        , Html.Attributes.style "height" "50px"
+                        ]
+                        [ Html.option
+                            [ Html.Attributes.value "Ordered"
+                            ]
+                            [ Html.text "Ordered"
+                            ]
+                        , Html.option
+                            [ Html.Attributes.value "Random"
+                            ]
+                            [ Html.text "Random"
+                            ]
+                        ]
                     ]
-                    [ Html.text "Ordered"
+                , Html.div
+                    []
+                    [ Html.button
+                        [ Html.Events.onClick Msg.Solve
+                        , Html.Attributes.style "width" "100px"
+                        , Html.Attributes.style "height" "50px"
+                        ]
+                        [ Html.text (if app.isSolving then "Stop" else "Solve")
+                        ]
                     ]
-                , Html.option
-                    [ Html.Attributes.value "Random"
-                    ]
-                    [ Html.text "Random"
-                    ]
+                , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size board.shotResults) ]
                 ]
-            ]
-        , Html.div
-            []
-            [ Html.button
-                [ Html.Events.onClick Msg.Solve
-                , Html.Attributes.style "width" "100px"
-                , Html.Attributes.style "height" "50px"
-                ]
-                [ Html.text (if app.isSolving then "Stop" else "Solve")
-                ]
-            ]
-        , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size app.board.shotResults) ]
-        ]
 
 boardView : Board.Board -> Html.Html Msg.Msg
 boardView board =
@@ -100,7 +103,7 @@ boardView board =
                         []
                     , Svg.g
                         []
-                        (List.map shipView <| Dict.toList board.placedShips)
+                        (List.map placedShipView <| Dict.toList board.placedShips)
                     , Svg.g
                         []
                         (List.map shotResultView <| Dict.toList board.shotResults)
@@ -108,8 +111,8 @@ boardView board =
                 ]
             ]
 
-shipView : ((Int,Int), Ship.Ship) -> Svg.Svg Msg.Msg
-shipView ((x,y),ship) =
+placedShipView : ((Int,Int), Ship.Ship) -> Svg.Svg Msg.Msg
+placedShipView ((x,y),ship) =
     Svg.use
         [ Svg.Attributes.xlinkHref "#ship"
         , Svg.Attributes.x <| Debug.toString x

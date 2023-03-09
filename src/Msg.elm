@@ -5,6 +5,7 @@ import Strategy
 import Time
 
 type Msg
-    = SetStrategy (Maybe Strategy.Strategy)
+    = SetBoard Time.Posix
+    | SetStrategy String
     | Solve
     | Tick Time.Posix
