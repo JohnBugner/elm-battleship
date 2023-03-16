@@ -32,7 +32,7 @@ update msg app =
                 | maybeBoard = Just <| Board.init (10,10) seed
                 }
         Msg.SetStrategy ident -> { app | maybeStrategy = Strategy.fromString ident}
-        Msg.Solve -> { app | isSolving = not app.isSolving}
+        Msg.StartStopSolving -> { app | isSolving = not app.isSolving}
         Msg.Tick _ ->
             if app.isSolving
             then

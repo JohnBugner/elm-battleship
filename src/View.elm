@@ -45,7 +45,7 @@ appView app =
                 , Html.div
                     []
                     [ Html.button
-                        [ Html.Events.onClick Msg.Solve
+                        [ Html.Events.onClick Msg.StartStopSolving
                         , Html.Attributes.style "width" "100px"
                         , Html.Attributes.style "height" "50px"
                         ]
