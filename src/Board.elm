@@ -26,9 +26,9 @@ init size shipTypes seed =
     }
 
 shoot : (Int,Int) -> Board -> Maybe Board
-shoot shotCoord board =
-    -- Has a shot already been fired at that coordinate ?
-    if Dict.member shotCoord board.shotResults
+shoot location board =
+    -- Has a shot already been fired at that location ?
+    if Dict.member location board.shotResults
     then Nothing
     else
         Just 
@@ -37,26 +37,26 @@ shoot shotCoord board =
                 let
                     shotResult : ShotResult.ShotResult
                     shotResult =
-                        case Dict.get shotCoord board.placedShips of
+                        case Dict.get location board.placedShips of
                             Just shipType -> ShotResult.Hit shipType
                             Nothing -> ShotResult.Miss
                 in
-                    Dict.insert shotCoord shotResult board.shotResults
+                    Dict.insert location shotResult board.shotResults
             }
 
-solveStep : Strategy.Strategy -> Board -> Maybe Board
-solveStep strategy board =
+solve : Strategy.Strategy -> Board -> Maybe Board
+solve strategy board =
     let
-        maybeShotCoord : Maybe (Int,Int)
-        maybeShotCoord = Strategy.maybeShotCoord (toOpenBoard board) strategy
+        maybeShotLocation : Maybe (Int,Int)
+        maybeShotLocation = Strategy.maybeShotLocation (toOpenBoard board) strategy
     in
         -- Is the board already solved ?
         if isSolved board
         then Nothing
         else
             -- Did the strategy even fire a shot ?
-            case maybeShotCoord of
-                Just shotCoord -> shoot shotCoord board
+            case maybeShotLocation of
+                Just location -> shoot location board
                 Nothing -> Nothing
 
 isSolved : Board -> Bool

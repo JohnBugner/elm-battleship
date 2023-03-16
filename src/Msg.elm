@@ -1,7 +1,5 @@
 module Msg exposing (..)
 
-import Strategy
-
 import Time
 
 type Msg

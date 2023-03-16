@@ -12,8 +12,8 @@ type alias OpenBoard =
     , shotResults : Grid.Grid ShotResult.ShotResult
     }
 
-notShotCoords : OpenBoard -> Set.Set (Int,Int)
-notShotCoords openBoard =
+notShotLocations : OpenBoard -> Set.Set (Int,Int)
+notShotLocations openBoard =
     let
         a : Set.Set (Int,Int)
         a =

@@ -49,7 +49,7 @@ update msg app =
             then
                 case ( app.maybeBoard, app.maybeStrategy ) of
                     ( Just board, Just strategy ) ->
-                        case Board.solveStep strategy board of
+                        case Board.solve strategy board of
                             Just newBoard -> { app | maybeBoard = Just newBoard }
                             Nothing -> { app | isSolving = False }
                     _ -> app

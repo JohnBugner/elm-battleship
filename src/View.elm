@@ -2,12 +2,11 @@ module View exposing (..)
 
 import App
 import Board
-import Dict
 import Msg
 import ShipType
 import ShotResult
-import Strategy
 
+import Dict
 import Html
 import Html.Attributes
 import Html.Events
