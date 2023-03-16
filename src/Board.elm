@@ -2,6 +2,7 @@ module Board exposing (..)
 
 import Grid
 import Ship
+import ShipType
 import ShotResult
 import Strategy
 import OpenBoard
@@ -11,21 +12,22 @@ import Random
 
 type alias Board =
     { size : (Int,Int)
-    , placedShips : Grid.Grid Ship.Ship
+    , placedShips : Grid.Grid ShipType.ShipType
     , shotResults : Grid.Grid ShotResult.ShotResult
     }
 
-init : (Int,Int) -> Random.Seed -> Board
-init size seed =
+init : (Int,Int) -> List ShipType.ShipType -> Random.Seed -> Board
+init size shipTypes seed =
     { size = size
     , placedShips =
         Tuple.first <|
-        Random.step (Ship.placedShipsGen size Ship.inits) seed
+        Random.step (Ship.placedShipTypesGen shipTypes size) seed
     , shotResults = Dict.empty
     }
 
 shoot : (Int,Int) -> Board -> Maybe Board
 shoot shotCoord board =
+    -- Has a shot already been fired at that coordinate ?
     if Dict.member shotCoord board.shotResults
     then Nothing
     else
@@ -36,7 +38,7 @@ shoot shotCoord board =
                     shotResult : ShotResult.ShotResult
                     shotResult =
                         case Dict.get shotCoord board.placedShips of
-                            Just ship -> ShotResult.Hit ship
+                            Just shipType -> ShotResult.Hit shipType
                             Nothing -> ShotResult.Miss
                 in
                     Dict.insert shotCoord shotResult board.shotResults
@@ -54,11 +56,7 @@ solveStep strategy board =
         else
             -- Did the strategy even fire a shot ?
             case maybeShotCoord of
-                Just shotCoord ->
-                    -- Has a shot already been fired at that coordinate ?
-                    case shoot shotCoord board of
-                        Just newBoard -> Just newBoard
-                        Nothing -> Nothing
+                Just shotCoord -> shoot shotCoord board
                 Nothing -> Nothing
 
 isSolved : Board -> Bool

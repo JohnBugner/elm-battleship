@@ -2,6 +2,7 @@ module App exposing (..)
 
 import Board
 import Msg
+import ShipType
 import Strategy
 
 import Random
@@ -25,11 +26,21 @@ update msg app =
     case msg of
         Msg.SetBoard time ->
             let
+                size : (Int,Int)
+                size = (10,10)
+                shipTypes : List ShipType.ShipType
+                shipTypes =
+                    [ ShipType.Destroyer
+                    , ShipType.Submarine
+                    , ShipType.Cruiser
+                    , ShipType.Battleship
+                    , ShipType.Carrier
+                    ]
                 seed : Random.Seed
                 seed = Random.initialSeed <| Time.posixToMillis time
             in
                 { app
-                | maybeBoard = Just <| Board.init (10,10) seed
+                | maybeBoard = Just <| Board.init size shipTypes seed
                 }
         Msg.SetStrategy ident -> { app | maybeStrategy = Strategy.fromString ident}
         Msg.StartStopSolving -> { app | isSolving = not app.isSolving}

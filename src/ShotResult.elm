@@ -1,7 +1,7 @@
 module ShotResult exposing (..)
 
-import Ship
+import ShipType
 
 type ShotResult
-    = Hit Ship.Ship
+    = Hit ShipType.ShipType
     | Miss

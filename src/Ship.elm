@@ -3,106 +3,76 @@ module Ship exposing (..)
 import Direction
 import Extra
 import Grid
+import ShipType
 
 import Dict
 import Random
 
-type Ship
-    = Destroyer
-    | Submarine
-    | Cruiser
-    | Battleship
-    | Carrier
+type alias Ship =
+    { shipType : ShipType.ShipType
+    , direction : Direction.Direction
+    , location : (Int,Int)
+    }
 
-length : Ship -> Int
-length ship =
-    case ship of
-        Destroyer  -> 2
-        Submarine  -> 3
-        Cruiser    -> 3
-        Battleship -> 4
-        Carrier    -> 5
-
-abbreviation : Ship -> String
-abbreviation ship =
-    case ship of
-        Destroyer  -> "D"
-        Submarine  -> "S"
-        Cruiser    -> "C"
-        Battleship -> "B"
-        Carrier    -> "A"
-
-inits : List Ship
-inits =
-    [ Destroyer
-    , Submarine
-    , Cruiser
-    , Battleship
-    , Carrier
-    ]
-
-coordsOfShipStartedAt : Ship -> Direction.Direction -> (Int,Int) -> List (Int,Int)
-coordsOfShipStartedAt ship direction (x,y) =
+locations : Ship -> List (Int,Int)
+locations ship =
     let
         n : Int
-        n = length ship
+        n = ShipType.length ship.shipType
+        (x,y) = ship.location
     in
-        case direction of
+        case ship.direction of
             Direction.Horizontal ->
-                List.map (\ xx -> (xx,y)) <|
+                List.map (\ x_ -> (x_,y)) <|
                 List.range x (x + n - 1)
             Direction.Vertical ->
-                List.map (\ yy -> (x,yy)) <|
+                List.map (\ y_ -> (x,y_)) <|
                 List.range y (y + n - 1)
 
-maybePlaceShip : Ship -> Direction.Direction -> (Int,Int) -> Grid.Grid Ship -> (Int,Int) -> Maybe (Grid.Grid Ship)
-maybePlaceShip ship direction wh placedShips xy =
-    if isValidStartingCoordForShip ship direction wh placedShips xy
+maybePlaceShip : Ship -> (Int,Int) -> Grid.Grid ShipType.ShipType -> Maybe (Grid.Grid ShipType.ShipType)
+maybePlaceShip ship size placedShips =
+    if isValidStartingLocationForShip ship size placedShips
     then
         Just <|
-        List.foldl (\ xy_ -> Dict.insert xy_ ship) placedShips <|
-        coordsOfShipStartedAt ship direction xy
+        List.foldl (\ location -> Dict.insert location ship.shipType) placedShips <|
+        locations ship
     else Nothing
 
-validStartingCoordsOfShip : Ship -> Direction.Direction -> (Int,Int) -> Grid.Grid Ship -> List (Int,Int)
-validStartingCoordsOfShip ship direction wh placedShips =
-    List.filter (isValidStartingCoordForShip ship direction wh placedShips) <|
+validStartingLocationsForShipTypeAndDirection : ShipType.ShipType -> Direction.Direction -> (Int,Int) -> Grid.Grid ShipType.ShipType -> List (Int,Int)
+validStartingLocationsForShipTypeAndDirection shipType direction size placedShips =
+    List.filter (\ location -> isValidStartingLocationForShip (Ship shipType direction location) size placedShips) <|
     Extra.range2d <|
-    Extra.add wh (-1,-1)
+    Extra.add size (-1,-1)
 
-isValidStartingCoordForShip : Ship -> Direction.Direction -> (Int,Int) -> Grid.Grid Ship -> (Int,Int) -> Bool
-isValidStartingCoordForShip ship direction (w,h) placedShips xy =
+isValidStartingLocationForShip : Ship -> (Int,Int) -> Grid.Grid ShipType.ShipType -> Bool
+isValidStartingLocationForShip ship (w,h) placedShips =
     let
-        coordIsInBounds : (Int,Int) -> Bool
-        coordIsInBounds (x,y) = (x >= 0) && (x < w) && (y >= 0) && (y < h)
-        coordIsEmpty : (Int,Int) -> Bool
-        coordIsEmpty xy_ = not <| Dict.member xy_ placedShips
+        locationIsInBounds : (Int,Int) -> Bool
+        locationIsInBounds (x,y) = (x >= 0) && (x < w) && (y >= 0) && (y < h)
+        locationIsEmpty : (Int,Int) -> Bool
+        locationIsEmpty location = not <| Dict.member location placedShips
     in
-        List.all (\ xy_ -> coordIsInBounds xy_ && coordIsEmpty xy_) <|
-        coordsOfShipStartedAt ship direction xy
+        List.all (\ location -> locationIsInBounds location && locationIsEmpty location) <|
+        locations ship
 
-placedShipsGen : (Int,Int) -> List Ship -> Random.Generator (Grid.Grid Ship)
-placedShipsGen wh ships =
+placedShipTypesGen : List ShipType.ShipType -> (Int,Int) -> Random.Generator (Grid.Grid ShipType.ShipType)
+placedShipTypesGen shipTypes size =
     let
-        f : Ship -> Random.Generator (Grid.Grid Ship) -> Random.Generator (Grid.Grid Ship)
-        f ship gen = Random.andThen (placedShipGen wh ship) gen
+        f : ShipType.ShipType -> Random.Generator (Grid.Grid ShipType.ShipType) -> Random.Generator (Grid.Grid ShipType.ShipType)
+        f shipType gen = Random.andThen (placedShipTypeGen shipType size) gen
     in
-        List.foldl f (Random.constant Dict.empty) ships
+        List.foldl f (Random.constant Dict.empty) shipTypes
 
-placedShipGen : (Int,Int) -> Ship -> Grid.Grid Ship -> Random.Generator (Grid.Grid Ship)
-placedShipGen wh ship placedShips =
+placedShipTypeGen : ShipType.ShipType -> (Int,Int) -> Grid.Grid ShipType.ShipType -> Random.Generator (Grid.Grid ShipType.ShipType)
+placedShipTypeGen shipType size placedShips =
     let
-        f : Direction.Direction -> Random.Generator (Grid.Grid Ship)
+        f : Direction.Direction -> Random.Generator (Grid.Grid ShipType.ShipType)
         f direction =
-            let
-                aa = validStartingCoordsOfShip ship direction wh placedShips
-            in
-                case aa of
-                    a :: as_ ->
-                        Random.map (Maybe.withDefault placedShips) <|
-                        Random.map (\ xy -> maybePlaceShip ship direction wh placedShips xy) <|
-                        Random.uniform a as_
-                    [] -> Random.constant placedShips
+            case validStartingLocationsForShipTypeAndDirection shipType direction size placedShips of
+                h :: t ->
+                    Random.map (Maybe.withDefault placedShips) <|
+                    Random.map (\ location -> maybePlaceShip (Ship shipType direction location) size placedShips) <|
+                    Random.uniform h t
+                [] -> Random.constant placedShips
     in
-        Random.andThen f <|
-        Direction.directionGen
+        Random.andThen f Direction.directionGen

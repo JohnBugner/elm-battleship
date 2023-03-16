@@ -4,7 +4,7 @@ import App
 import Board
 import Dict
 import Msg
-import Ship
+import ShipType
 import ShotResult
 import Strategy
 
@@ -111,8 +111,8 @@ boardView board =
                 ]
             ]
 
-placedShipView : ((Int,Int), Ship.Ship) -> Svg.Svg Msg.Msg
-placedShipView ((x,y),ship) =
+placedShipView : ((Int,Int), ShipType.ShipType) -> Svg.Svg Msg.Msg
+placedShipView ((x,y), shipType) =
     Svg.use
         [ Svg.Attributes.xlinkHref "#ship"
         , Svg.Attributes.x <| Debug.toString x
@@ -121,7 +121,7 @@ placedShipView ((x,y),ship) =
         []
 
 shotResultView : ((Int,Int), ShotResult.ShotResult) -> Svg.Svg Msg.Msg
-shotResultView ((x,y),shotResult) =
+shotResultView ((x,y), shotResult) =
     let
         mark : String -> Svg.Svg a
         mark shotResultIdent =
@@ -131,7 +131,7 @@ shotResultView ((x,y),shotResult) =
                 , Svg.Attributes.y <| Debug.toString y
                 ]
                 []
-        text : Ship.Ship -> Svg.Svg a
+        text : ShipType.ShipType -> Svg.Svg a
         text ship =
                 Svg.text_
                     [ Svg.Attributes.x <| Debug.toString <| (+) 0.5 <| toFloat x
@@ -140,7 +140,7 @@ shotResultView ((x,y),shotResult) =
                     , Svg.Attributes.dominantBaseline "middle"
                     , Svg.Attributes.fontSize "1"
                     ]
-                    [ Svg.text <| Ship.abbreviation ship
+                    [ Svg.text <| ShipType.abbreviation ship
                     ]
     in
         case shotResult of
