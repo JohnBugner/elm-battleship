@@ -123,15 +123,34 @@ placedShipView ((x,y),ship) =
 shotResultView : ((Int,Int), ShotResult.ShotResult) -> Svg.Svg Msg.Msg
 shotResultView ((x,y),shotResult) =
     let
-        ident : ShotResult.ShotResult -> String
-        ident shotResult_ =
-            case shotResult_ of
-                ShotResult.Hit -> "#hit"
-                ShotResult.Miss -> "#miss"
+        mark : String -> Svg.Svg a
+        mark shotResultIdent =
+            Svg.use
+                [ Svg.Attributes.xlinkHref shotResultIdent
+                , Svg.Attributes.x <| Debug.toString x
+                , Svg.Attributes.y <| Debug.toString y
+                ]
+                []
+        text : Ship.Ship -> Svg.Svg a
+        text ship =
+                Svg.text_
+                    [ Svg.Attributes.x <| Debug.toString <| (+) 0.5 <| toFloat x
+                    , Svg.Attributes.y <| Debug.toString <| (+) 0.6 <| toFloat y
+                    , Svg.Attributes.textAnchor "middle"
+                    , Svg.Attributes.dominantBaseline "middle"
+                    , Svg.Attributes.fontSize "1"
+                    ]
+                    [ Svg.text <| Ship.abbreviation ship
+                    ]
     in
-        Svg.use
-            [ Svg.Attributes.xlinkHref <| ident shotResult
-            , Svg.Attributes.x <| Debug.toString x
-            , Svg.Attributes.y <| Debug.toString y
-            ]
-            []
+        case shotResult of
+            ShotResult.Hit ship ->
+                Svg.g
+                    [ Svg.Attributes.width "100"
+                    , Svg.Attributes.height "100"
+                    ]
+                    [ mark "#hit"
+                    , text ship
+                    ]
+            ShotResult.Miss ->
+                mark "#miss"

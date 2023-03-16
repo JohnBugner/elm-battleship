@@ -23,6 +23,15 @@ length ship =
         Battleship -> 4
         Carrier    -> 5
 
+abbreviation : Ship -> String
+abbreviation ship =
+    case ship of
+        Destroyer  -> "D"
+        Submarine  -> "S"
+        Cruiser    -> "C"
+        Battleship -> "B"
+        Carrier    -> "A"
+
 inits : List Ship
 inits =
     [ Destroyer

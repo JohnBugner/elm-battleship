@@ -35,9 +35,9 @@ shoot shotCoord board =
                 let
                     shotResult : ShotResult.ShotResult
                     shotResult =
-                        if Dict.member shotCoord board.placedShips
-                        then ShotResult.Hit
-                        else ShotResult.Miss
+                        case Dict.get shotCoord board.placedShips of
+                            Just ship -> ShotResult.Hit ship
+                            Nothing -> ShotResult.Miss
                 in
                     Dict.insert shotCoord shotResult board.shotResults
             }
