@@ -72,7 +72,7 @@ appView app =
                     ]
                 , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size board.shotResults) ]
                 ]
-        ( _, _ ) -> Html.div [] []
+        _ -> Html.div [] []
 
 boardView : ViewType.ViewType -> Board.Board -> Html.Html Msg.Msg
 boardView viewType board =
@@ -89,7 +89,7 @@ boardView viewType board =
                 [ Svg.defs
                     []
                     [ Svg.rect
-                        [ Svg.Attributes.id "ship"
+                        [ Svg.Attributes.id "shipType"
                         , Svg.Attributes.fill "gray"
                         , Svg.Attributes.width "1"
                         , Svg.Attributes.height "1"
@@ -124,7 +124,10 @@ boardView viewType board =
                         []
                         ( case viewType of
                             ViewType.Player -> []
-                            ViewType.God    -> (List.map shipTypeView <| Dict.toList board.placedShips)
+                            ViewType.God ->
+                                List.map shipTypeView <|
+                                Dict.toList <|
+                                board.placedShips
                         )
                     , Svg.g
                         []
@@ -135,10 +138,12 @@ boardView viewType board =
                             ViewType.Player ->
                                 List.map shipTypeAbbreviationView <|
                                 Dict.toList <|
-                                Dict.filter (\ location _ -> Dict.member location board.shotResults) board.placedShips
+                                Dict.filter (\ location _ -> Dict.member location board.shotResults) <|
+                                board.placedShips
                             ViewType.God ->
                                 List.map shipTypeAbbreviationView <|
-                                Dict.toList board.placedShips
+                                Dict.toList <|
+                                board.placedShips
                         )
                     ]
                 ]
@@ -147,7 +152,7 @@ boardView viewType board =
 shipTypeView : ((Int,Int), ShipType.ShipType) -> Svg.Svg Msg.Msg
 shipTypeView ((x,y), shipType) =
     Svg.use
-        [ Svg.Attributes.xlinkHref "#ship"
+        [ Svg.Attributes.xlinkHref "#shipType"
         , Svg.Attributes.x <| Debug.toString x
         , Svg.Attributes.y <| Debug.toString y
         ]

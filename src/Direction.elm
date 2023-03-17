@@ -6,5 +6,5 @@ type Direction
     = Horizontal
     | Vertical
 
-directionGen : Random.Generator Direction
-directionGen = Random.uniform Horizontal [Vertical]
+gen : Random.Generator Direction
+gen = Random.uniform Horizontal [Vertical]

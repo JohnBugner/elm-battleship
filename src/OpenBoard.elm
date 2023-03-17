@@ -18,11 +18,13 @@ notShotLocations openBoard =
         a : Set.Set (Int,Int)
         a =
             Set.fromList <|
-            Extra.range2d <| Extra.add openBoard.size (-1,-1)
+            Extra.range2Dim <|
+            Extra.add openBoard.size (-1,-1)
         b : Set.Set (Int,Int)
         b =
             Set.fromList <|
             List.map Tuple.first <|
-            Dict.toList openBoard.shotResults
+            Dict.toList <|
+            openBoard.shotResults
     in
         Set.diff a b

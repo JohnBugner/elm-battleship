@@ -8,8 +8,8 @@ add (x1,y1) (x2,y2) = (x1 + x2, y1 + y2)
 noCmd : a -> (a, Cmd b)
 noCmd a = (a, Cmd.none)
 
-range2d : (Int,Int) -> List (Int,Int)
-range2d (w,h) = cartesianProductPairs (List.range 0 w) (List.range 0 h)
+range2Dim : (Int,Int) -> List (Int,Int)
+range2Dim (w,h) = cartesianProductPairs (List.range 0 w) (List.range 0 h)
 
 cartesianProductPairs : List a -> List a -> List (a,a)
 cartesianProductPairs as1 as2 =

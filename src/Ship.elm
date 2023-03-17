@@ -41,7 +41,7 @@ maybePlaceShip ship size placedShips =
 validStartingLocationsForShipTypeAndDirection : ShipType.ShipType -> Direction.Direction -> (Int,Int) -> Grid.Grid ShipType.ShipType -> List (Int,Int)
 validStartingLocationsForShipTypeAndDirection shipType direction size placedShips =
     List.filter (\ location -> isValidStartingLocationForShip (Ship shipType direction location) size placedShips) <|
-    Extra.range2d <|
+    Extra.range2Dim <|
     Extra.add size (-1,-1)
 
 isValidStartingLocationForShip : Ship -> (Int,Int) -> Grid.Grid ShipType.ShipType -> Bool
@@ -75,4 +75,4 @@ placedShipTypeGen shipType size placedShips =
                     Random.uniform h t
                 [] -> Random.constant placedShips
     in
-        Random.andThen f Direction.directionGen
+        Random.andThen f Direction.gen

@@ -14,8 +14,8 @@ fromString : String -> Maybe Strategy
 fromString s =
     case s of
         "Ordered" -> Just Ordered
-        "Random" -> Just Random
-        _ -> Nothing
+        "Random"  -> Just Random
+        _         -> Nothing
 
 maybeShotLocation : OpenBoard.OpenBoard -> Strategy -> Maybe (Int,Int)
 maybeShotLocation openBoard strategy =
