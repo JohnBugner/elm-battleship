@@ -4,12 +4,14 @@ import Board
 import Msg
 import ShipType
 import Strategy
+import ViewType
 
 import Random
 import Time
 
 type alias App =
     { maybeBoard : Maybe Board.Board
+    , maybeViewType : Maybe ViewType.ViewType
     , maybeStrategy : Maybe Strategy.Strategy
     , isSolving : Bool
     }
@@ -17,6 +19,7 @@ type alias App =
 init : App
 init =
     { maybeBoard = Nothing
+    , maybeViewType = Just ViewType.Player
     , maybeStrategy = Just Strategy.Ordered
     , isSolving = False
     }
@@ -42,8 +45,9 @@ update msg app =
                 { app
                 | maybeBoard = Just <| Board.init size shipTypes seed
                 }
-        Msg.SetStrategy ident -> { app | maybeStrategy = Strategy.fromString ident}
-        Msg.StartStopSolving -> { app | isSolving = not app.isSolving}
+        Msg.SetViewType ident -> { app | maybeViewType = ViewType.fromString ident }
+        Msg.SetStrategy ident -> { app | maybeStrategy = Strategy.fromString ident }
+        Msg.StartStopSolving -> { app | isSolving = not app.isSolving }
         Msg.Tick _ ->
             if app.isSolving
             then

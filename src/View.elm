@@ -5,6 +5,7 @@ import Board
 import Msg
 import ShipType
 import ShotResult
+import ViewType
 
 import Dict
 import Html
@@ -16,12 +17,30 @@ import Svg.Attributes
 
 appView : App.App -> Html.Html Msg.Msg
 appView app =
-    case app.maybeBoard of
-        Nothing -> Html.div [] []
-        Just board ->
+    case ( app.maybeBoard, app.maybeViewType ) of
+        ( Just board, Just viewType ) ->
             Html.div
                 []
-                [ boardView board
+                [ boardView viewType board
+                , Html.div
+                    []
+                    [ Html.select
+                        [ Html.Events.Extra.onChange Msg.SetViewType
+                        , Html.Attributes.style "width" "100px"
+                        , Html.Attributes.style "height" "50px"
+                        ]
+                        [ Html.option
+                            [ Html.Attributes.value "Player"
+                            ]
+                            [ Html.text "Player"
+                            ]
+                        , Html.option
+                            [ Html.Attributes.value "God"
+                            ]
+                            [ Html.text "God"
+                            ]
+                        ]
+                    ]
                 , Html.div
                     []
                     [ Html.select
@@ -53,9 +72,10 @@ appView app =
                     ]
                 , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size board.shotResults) ]
                 ]
+        ( _, _ ) -> Html.div [] []
 
-boardView : Board.Board -> Html.Html Msg.Msg
-boardView board =
+boardView : ViewType.ViewType -> Board.Board -> Html.Html Msg.Msg
+boardView viewType board =
     let
         (w,h) = board.size
     in
@@ -102,16 +122,30 @@ boardView board =
                         []
                     , Svg.g
                         []
-                        (List.map placedShipView <| Dict.toList board.placedShips)
+                        ( case viewType of
+                            ViewType.Player -> []
+                            ViewType.God    -> (List.map shipTypeView <| Dict.toList board.placedShips)
+                        )
                     , Svg.g
                         []
                         (List.map shotResultView <| Dict.toList board.shotResults)
+                    , Svg.g
+                        []
+                        ( case viewType of
+                            ViewType.Player ->
+                                List.map shipTypeAbbreviationView <|
+                                Dict.toList <|
+                                Dict.filter (\ location _ -> Dict.member location board.shotResults) board.placedShips
+                            ViewType.God ->
+                                List.map shipTypeAbbreviationView <|
+                                Dict.toList board.placedShips
+                        )
                     ]
                 ]
             ]
 
-placedShipView : ((Int,Int), ShipType.ShipType) -> Svg.Svg Msg.Msg
-placedShipView ((x,y), shipType) =
+shipTypeView : ((Int,Int), ShipType.ShipType) -> Svg.Svg Msg.Msg
+shipTypeView ((x,y), shipType) =
     Svg.use
         [ Svg.Attributes.xlinkHref "#ship"
         , Svg.Attributes.x <| Debug.toString x
@@ -130,26 +164,19 @@ shotResultView ((x,y), shotResult) =
                 , Svg.Attributes.y <| Debug.toString y
                 ]
                 []
-        text : ShipType.ShipType -> Svg.Svg a
-        text ship =
-                Svg.text_
-                    [ Svg.Attributes.x <| Debug.toString <| (+) 0.5 <| toFloat x
-                    , Svg.Attributes.y <| Debug.toString <| (+) 0.6 <| toFloat y
-                    , Svg.Attributes.textAnchor "middle"
-                    , Svg.Attributes.dominantBaseline "middle"
-                    , Svg.Attributes.fontSize "1"
-                    ]
-                    [ Svg.text <| ShipType.abbreviation ship
-                    ]
     in
         case shotResult of
-            ShotResult.Hit ship ->
-                Svg.g
-                    [ Svg.Attributes.width "100"
-                    , Svg.Attributes.height "100"
-                    ]
-                    [ mark "#hit"
-                    , text ship
-                    ]
-            ShotResult.Miss ->
-                mark "#miss"
+            ShotResult.Hit shipType -> mark "#hit"
+            ShotResult.Miss         -> mark "#miss"
+
+shipTypeAbbreviationView : ((Int,Int), ShipType.ShipType) -> Svg.Svg Msg.Msg
+shipTypeAbbreviationView ((x,y), shipType) =
+    Svg.text_
+        [ Svg.Attributes.x <| Debug.toString <| (+) 0.5 <| toFloat x
+        , Svg.Attributes.y <| Debug.toString <| (+) 0.6 <| toFloat y
+        , Svg.Attributes.textAnchor "middle"
+        , Svg.Attributes.dominantBaseline "middle"
+        , Svg.Attributes.fontSize "1"
+        ]
+        [ Svg.text <| ShipType.abbreviation shipType
+        ]
