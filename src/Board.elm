@@ -1,9 +1,9 @@
 module Board exposing (..)
 
 import Grid
+import LiveShip
 import Ship
-import ShipType
-import ShotResult
+import Shot
 import Strategy
 import OpenBoard
 
@@ -12,36 +12,38 @@ import Random
 
 type alias Board =
     { size : (Int,Int)
-    , placedShips : Grid.Grid ShipType.ShipType
-    , shotResults : Grid.Grid ShotResult.ShotResult
+    , ships : List Ship.Ship
+    , placedShips : Grid.Grid Ship.Ship
+    , placedShots : Grid.Grid Shot.Shot
     }
 
-init : (Int,Int) -> List ShipType.ShipType -> Random.Seed -> Board
-init size shipTypes seed =
+init : (Int,Int) -> List Ship.Ship -> Random.Seed -> Board
+init size ships seed =
     { size = size
+    , ships = ships
     , placedShips =
         Tuple.first <|
-        Random.step (Ship.placedShipTypesGen shipTypes size) seed
-    , shotResults = Dict.empty
+        Random.step (LiveShip.placedShipsGen ships size) seed
+    , placedShots = Dict.empty
     }
 
 shoot : (Int,Int) -> Board -> Maybe Board
 shoot location board =
     -- Has a shot already been fired at that location ?
-    if Dict.member location board.shotResults
+    if Dict.member location board.placedShots
     then Nothing
     else
         Just 
             { board
-            | shotResults =
+            | placedShots =
                 let
-                    shotResult : ShotResult.ShotResult
-                    shotResult =
+                    shot : Shot.Shot
+                    shot =
                         case Dict.get location board.placedShips of
-                            Just shipType -> ShotResult.Hit shipType
-                            Nothing -> ShotResult.Miss
+                            Just ship -> Shot.Hit ship
+                            Nothing -> Shot.Miss
                 in
-                    Dict.insert location shotResult board.shotResults
+                    Dict.insert location shot board.placedShots
             }
 
 solve : Strategy.Strategy -> Board -> Maybe Board
@@ -62,10 +64,11 @@ solve strategy board =
 isSolved : Board -> Bool
 isSolved board =
     Dict.isEmpty <|
-    Dict.diff board.placedShips board.shotResults
+    Dict.diff board.placedShips board.placedShots
 
 toOpenBoard : Board -> OpenBoard.OpenBoard
 toOpenBoard board =
     { size = board.size
-    , shotResults = board.shotResults
+    , ships = board.ships
+    , placedShots = board.placedShots
     }

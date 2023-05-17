@@ -7,12 +7,14 @@ import Random.List
 import Set
 
 type Strategy
-    = Ordered
+    = Smart
+    | Ordered
     | Random
 
 fromString : String -> Maybe Strategy
 fromString s =
     case s of
+        "Smart"   -> Just Smart
         "Ordered" -> Just Ordered
         "Random"  -> Just Random
         _         -> Nothing
@@ -20,10 +22,15 @@ fromString s =
 maybeShotLocation : OpenBoard.OpenBoard -> Strategy -> Maybe (Int,Int)
 maybeShotLocation openBoard strategy =
     case strategy of
-        -- Picks a location from left to right, then top to bottom.
+        -- Picks a location based on which is the most likely to have a ship.
+        Smart ->
+            List.head <|
+            List.sortBy (\ location -> 1 - (OpenBoard.probThatLocationHasShip location openBoard)) <|
+            Set.toList <|
+            OpenBoard.notShotLocations openBoard
+        -- Picks a location from top to bottom, then left to right.
         Ordered ->
             List.head <|
-            List.sortBy Tuple.second <|
             Set.toList <|
             OpenBoard.notShotLocations openBoard
         -- Picks a random location to shoot.

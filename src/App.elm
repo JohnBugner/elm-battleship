@@ -2,7 +2,7 @@ module App exposing (..)
 
 import Board
 import Msg
-import ShipType
+import Ship
 import Strategy
 import ViewType
 
@@ -20,7 +20,7 @@ init : App
 init =
     { maybeBoard = Nothing
     , maybeViewType = Just ViewType.Player
-    , maybeStrategy = Just Strategy.Ordered
+    , maybeStrategy = Just Strategy.Smart
     , isSolving = False
     }
 
@@ -30,14 +30,15 @@ update msg app =
         Msg.SetBoard time ->
             let
                 size : (Int,Int)
-                size = (10,10)
-                shipTypes : List ShipType.ShipType
+                --size = (10,10)
+                size = (4,4)
+                shipTypes : List Ship.Ship
                 shipTypes =
-                    [ ShipType.Destroyer
-                    , ShipType.Submarine
-                    , ShipType.Cruiser
-                    , ShipType.Battleship
-                    , ShipType.Carrier
+                    [ Ship.Destroyer
+                    , Ship.Submarine
+                    --, Ship.Cruiser
+                    --, Ship.Battleship
+                    --, Ship.AircraftCarrier
                     ]
                 seed : Random.Seed
                 seed = Random.initialSeed <| Time.posixToMillis time
