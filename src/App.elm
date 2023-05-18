@@ -31,14 +31,14 @@ update msg app =
             let
                 size : (Int,Int)
                 --size = (10,10)
-                size = (4,4)
+                size = (8,8)
                 shipTypes : List Ship.Ship
                 shipTypes =
                     [ Ship.Destroyer
-                    , Ship.Submarine
+                    --, Ship.Submarine
                     --, Ship.Cruiser
                     --, Ship.Battleship
-                    --, Ship.AircraftCarrier
+                    , Ship.AircraftCarrier
                     ]
                 seed : Random.Seed
                 seed = Random.initialSeed <| Time.posixToMillis time

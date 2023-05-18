@@ -15,6 +15,7 @@ type alias Board =
     , ships : List Ship.Ship
     , placedShips : Grid.Grid Ship.Ship
     , placedShots : Grid.Grid Shot.Shot
+    , matchingShipGrids : List (Grid.Grid Ship.Ship)
     }
 
 init : (Int,Int) -> List Ship.Ship -> Random.Seed -> Board
@@ -25,6 +26,7 @@ init size ships seed =
         Tuple.first <|
         Random.step (LiveShip.placedShipsGen ships size) seed
     , placedShots = Dict.empty
+    , matchingShipGrids = LiveShip.grids ships size
     }
 
 shoot : (Int,Int) -> Board -> Maybe Board
@@ -33,17 +35,17 @@ shoot location board =
     if Dict.member location board.placedShots
     then Nothing
     else
+        let
+            shot : Shot.Shot
+            shot =
+                case Dict.get location board.placedShips of
+                    Just ship -> Shot.Hit ship
+                    Nothing -> Shot.Miss
+        in
         Just 
             { board
-            | placedShots =
-                let
-                    shot : Shot.Shot
-                    shot =
-                        case Dict.get location board.placedShips of
-                            Just ship -> Shot.Hit ship
-                            Nothing -> Shot.Miss
-                in
-                    Dict.insert location shot board.placedShots
+            | placedShots = Dict.insert location shot board.placedShots
+            , matchingShipGrids = List.filter (OpenBoard.matches (location, shot)) board.matchingShipGrids
             }
 
 solve : Strategy.Strategy -> Board -> Maybe Board
@@ -71,4 +73,5 @@ toOpenBoard board =
     { size = board.size
     , ships = board.ships
     , placedShots = board.placedShots
+    , matchingShipGrids = board.matchingShipGrids
     }

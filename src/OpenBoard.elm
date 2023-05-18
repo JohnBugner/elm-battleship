@@ -13,6 +13,7 @@ type alias OpenBoard =
     { size : (Int,Int)
     , ships : List Ship.Ship
     , placedShots : Grid.Grid Shot.Shot
+    , matchingShipGrids : List (Grid.Grid Ship.Ship)
     }
 
 allLocations : OpenBoard -> Set.Set (Int,Int)
@@ -44,34 +45,36 @@ probThatLocationHasShip location openBoard =
                     a =
                         toFloat <|
                         List.sum <|
-                        List.map amountOfBoardsThatMatch <|
-                        List.map (\ ship -> { openBoard | placedShots = Dict.insert location (Shot.Hit ship) openBoard.placedShots }) <|
+                        List.map List.length <|
+                        List.map .matchingShipGrids <|
+                        List.filterMap (\ ship -> shoot location (Shot.Hit ship) openBoard) <|
                         openBoard.ships
                     b : Float
                     b =
                         toFloat <|
-                        amountOfBoardsThatMatch openBoard
+                        List.length <|
+                        openBoard.matchingShipGrids
                 in
                     a / b
             else 0
 
-amountOfBoardsThatMatch : OpenBoard -> Int
-amountOfBoardsThatMatch openBoard =
-    List.length <|
-    List.filter (matches openBoard.placedShots) <|
-    LiveShip.grids openBoard.ships openBoard.size
+-- fix
+shoot : (Int,Int) -> Shot.Shot -> OpenBoard -> Maybe OpenBoard
+shoot location shot openBoard =
+    -- Has a shot already been fired at that location ?
+    if Dict.member location openBoard.placedShots
+    then Nothing
+    else
+        Just 
+            { openBoard
+            | placedShots = Dict.insert location shot openBoard.placedShots
+            , matchingShipGrids = List.filter (matches (location, shot)) openBoard.matchingShipGrids
+            }
 
-matches : Grid.Grid Shot.Shot -> Grid.Grid Ship.Ship -> Bool
-matches placedShots placedShips =
-    let
-        locationMatches : ((Int,Int), Shot.Shot) -> Bool
-        locationMatches (location, shot) =
-            case ( shot, Dict.get location placedShips ) of
-                ( Shot.Hit a, Just b  ) -> a == b
-                ( Shot.Hit _, Nothing ) -> False
-                ( Shot.Miss , Just _  ) -> False
-                ( Shot.Miss , Nothing ) -> True
-    in
-        List.all locationMatches <|
-        Dict.toList <|
-        placedShots
+matches : ((Int,Int), Shot.Shot) -> Grid.Grid Ship.Ship -> Bool
+matches (location, shot) placedShips =
+    case ( shot, Dict.get location placedShips ) of
+        ( Shot.Hit a, Just b  ) -> a == b
+        ( Shot.Hit _, Nothing ) -> False
+        ( Shot.Miss , Just _  ) -> False
+        ( Shot.Miss , Nothing ) -> True
