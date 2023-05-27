@@ -29,6 +29,13 @@ init size ships seed =
     , matchingShipGrids = LiveShip.grids ships size
     }
 
+reset : Board -> Board
+reset board =
+    { board
+    | placedShots = Dict.empty
+    , matchingShipGrids = LiveShip.grids board.ships board.size
+    }
+
 shoot : (Int,Int) -> Board -> Maybe Board
 shoot location board =
     -- Has a shot already been fired at that location ?

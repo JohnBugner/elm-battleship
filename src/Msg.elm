@@ -9,3 +9,4 @@ type Msg
     | StartStopSolving
     | Tick Time.Posix
     | Shoot (Int,Int)
+    | ResetBoard

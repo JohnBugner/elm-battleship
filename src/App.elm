@@ -71,6 +71,13 @@ update msg app =
                         in
                             { app | maybeBoard = maybeNewBoard }
                 _ -> app
+        Msg.ResetBoard ->
+            case app.maybeBoard of
+                Just board ->
+                    { app
+                    | maybeBoard = Just (Board.reset board)
+                    }
+                _ -> app
 
 subs : App -> Sub Msg.Msg
 subs app =

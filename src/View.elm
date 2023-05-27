@@ -83,6 +83,16 @@ appView app =
                         ]
                     ]
                 , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size board.placedShots) ]
+                , Html.div
+                    []
+                    [ Html.button
+                        [ Html.Events.onClick Msg.ResetBoard
+                        , Html.Attributes.style "width" "100px"
+                        , Html.Attributes.style "height" "50px"
+                        ]
+                        [ Html.text "Reset"
+                        ]
+                    ]
                 ]
         _ -> Html.div [] []
 
