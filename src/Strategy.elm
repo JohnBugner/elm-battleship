@@ -10,6 +10,7 @@ type Strategy
     = Smart
     | Ordered
     | Random
+    | Manual
 
 fromString : String -> Maybe Strategy
 fromString s =
@@ -17,6 +18,7 @@ fromString s =
         "Smart"   -> Just Smart
         "Ordered" -> Just Ordered
         "Random"  -> Just Random
+        "Manual"  -> Just Manual
         _         -> Nothing
 
 maybeShotLocation : OpenBoard.OpenBoard -> Strategy -> Maybe (Int,Int)
@@ -47,3 +49,5 @@ maybeShotLocation openBoard strategy =
             in
                 Tuple.first <|
                 Random.step gen seed
+        Manual ->
+            Nothing

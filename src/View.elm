@@ -2,6 +2,7 @@ module View exposing (..)
 
 import App
 import Board
+import Extra
 import Msg
 import Ship
 import Shot
@@ -14,6 +15,7 @@ import Html.Events
 import Html.Events.Extra
 import Svg
 import Svg.Attributes
+import Svg.Events
 
 appView : App.App -> Html.Html Msg.Msg
 appView app =
@@ -63,6 +65,11 @@ appView app =
                             ]
                             [ Html.text "Random"
                             ]
+                        , Html.option
+                            [ Html.Attributes.value "Manual"
+                            ]
+                            [ Html.text "Manual"
+                            ]
                         ]
                     ]
                 , Html.div
@@ -94,6 +101,13 @@ boardView viewType board =
                 [ Svg.defs
                     []
                     [ Svg.rect
+                        [ Svg.Attributes.id "cell"
+                        , Svg.Attributes.fill "blue"
+                        , Svg.Attributes.width "1"
+                        , Svg.Attributes.height "1"
+                        ]
+                        []
+                    , Svg.rect
                         [ Svg.Attributes.id "ship"
                         , Svg.Attributes.fill "gray"
                         , Svg.Attributes.width "1"
@@ -119,12 +133,15 @@ boardView viewType board =
                     ]
                 , Svg.g
                     []
-                    [ Svg.rect
-                        [ Svg.Attributes.fill "blue"
-                        , Svg.Attributes.width <| Debug.toString w
-                        , Svg.Attributes.height <| Debug.toString h
-                        ]
+                    -- Cells
+                    [ Svg.g
                         []
+                        (
+                            List.map cellView <|
+                            Extra.pairsInRange <|
+                            Extra.sub board.size (1,1)
+                        )
+                    -- Ships
                     , Svg.g
                         []
                         ( case viewType of
@@ -134,9 +151,11 @@ boardView viewType board =
                                 Dict.toList <|
                                 board.placedShips
                         )
+                    -- Shots
                     , Svg.g
                         []
                         (List.map shotView <| Dict.toList board.placedShots)
+                    -- Ship Abbreviations
                     , Svg.g
                         []
                         ( case viewType of
@@ -154,8 +173,18 @@ boardView viewType board =
                 ]
             ]
 
+cellView : (Int,Int) -> Svg.Svg Msg.Msg
+cellView (x,y) =
+    Svg.use
+        [ Svg.Attributes.xlinkHref "#cell"
+        , Svg.Attributes.x <| Debug.toString x
+        , Svg.Attributes.y <| Debug.toString y
+        , Svg.Events.onClick (Msg.Shoot (x,y))
+        ]
+        []
+
 shipView : ((Int,Int), Ship.Ship) -> Svg.Svg Msg.Msg
-shipView ((x,y), ship) =
+shipView ((x,y), _) =
     Svg.use
         [ Svg.Attributes.xlinkHref "#ship"
         , Svg.Attributes.x <| Debug.toString x
@@ -166,18 +195,18 @@ shipView ((x,y), ship) =
 shotView : ((Int,Int), Shot.Shot) -> Svg.Svg Msg.Msg
 shotView ((x,y), shot) =
     let
-        mark : String -> Svg.Svg a
-        mark shotIdent =
-            Svg.use
-                [ Svg.Attributes.xlinkHref shotIdent
-                , Svg.Attributes.x <| Debug.toString x
-                , Svg.Attributes.y <| Debug.toString y
-                ]
-                []
+        shotIdent : String
+        shotIdent =
+            case shot of
+            Shot.Hit _ -> "#hit"
+            Shot.Miss  -> "#miss"
     in
-        case shot of
-            Shot.Hit ship -> mark "#hit"
-            Shot.Miss     -> mark "#miss"
+        Svg.use
+            [ Svg.Attributes.xlinkHref shotIdent
+            , Svg.Attributes.x <| Debug.toString x
+            , Svg.Attributes.y <| Debug.toString y
+            ]
+            []
 
 shipAbbreviationView : ((Int,Int), Ship.Ship) -> Svg.Svg Msg.Msg
 shipAbbreviationView ((x,y), ship) =

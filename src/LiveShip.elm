@@ -41,8 +41,8 @@ maybePlaceShip liveShip size placedShips =
 validStartingLocations : Ship.Ship -> Direction.Direction -> (Int,Int) -> Grid.Grid Ship.Ship -> List (Int,Int)
 validStartingLocations ship direction size placedShips =
     List.filter (\ location -> isValidStartingLocation (LiveShip ship direction location) size placedShips) <|
-    Extra.range2Dim <|
-    Extra.add size (-1,-1)
+    Extra.pairsInRange <|
+    Extra.sub size (1,1)
 
 isValidStartingLocation : LiveShip -> (Int,Int) -> Grid.Grid Ship.Ship -> Bool
 isValidStartingLocation liveShip size placedShips =

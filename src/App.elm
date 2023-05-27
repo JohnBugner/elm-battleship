@@ -50,15 +50,27 @@ update msg app =
         Msg.SetStrategy ident -> { app | maybeStrategy = Strategy.fromString ident }
         Msg.StartStopSolving -> { app | isSolving = not app.isSolving }
         Msg.Tick _ ->
-            if app.isSolving
-            then
-                case ( app.maybeBoard, app.maybeStrategy ) of
-                    ( Just board, Just strategy ) ->
+            case ( app.maybeBoard, app.maybeStrategy ) of
+                ( Just board, Just strategy ) ->
+                    if app.isSolving
+                    then
                         case Board.solve strategy board of
                             Just newBoard -> { app | maybeBoard = Just newBoard }
                             Nothing -> { app | isSolving = False }
-                    _ -> app
-            else app
+                    else app
+                _ -> app
+        Msg.Shoot location ->
+            case ( app.maybeBoard, app.maybeStrategy ) of
+                ( Just board, Just Strategy.Manual ) ->
+                    if Board.isSolved board
+                    then app
+                    else 
+                        let
+                            maybeNewBoard : Maybe Board.Board
+                            maybeNewBoard = Board.shoot location board
+                        in
+                            { app | maybeBoard = maybeNewBoard }
+                _ -> app
 
 subs : App -> Sub Msg.Msg
 subs app =

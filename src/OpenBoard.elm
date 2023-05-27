@@ -19,8 +19,8 @@ type alias OpenBoard =
 allLocations : OpenBoard -> Set.Set (Int,Int)
 allLocations openBoard =
     Set.fromList <|
-    Extra.range2Dim <|
-    Extra.add openBoard.size (-1,-1)
+    Extra.pairsInRange <|
+    Extra.sub openBoard.size (1,1)
 
 shotLocations : OpenBoard -> Set.Set (Int,Int)
 shotLocations openBoard =

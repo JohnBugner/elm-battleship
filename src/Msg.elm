@@ -8,3 +8,4 @@ type Msg
     | SetStrategy String
     | StartStopSolving
     | Tick Time.Posix
+    | Shoot (Int,Int)
