@@ -8,6 +8,7 @@ import Strategy
 import OpenBoard
 
 import Dict
+import List.Extra
 import Random
 
 type alias Board =
@@ -82,3 +83,22 @@ toOpenBoard board =
     , placedShots = board.placedShots
     , matchingShipGrids = board.matchingShipGrids
     }
+
+shipsLeft : Board -> List Ship.Ship
+shipsLeft board =
+    let
+        f : (Ship.Ship, List Ship.Ship) -> (Ship.Ship, Int)
+        f (ship, ships) =
+            let
+                startCellCount = (List.length ships + 1) * Ship.length ship
+                currentCellCount =
+                    Dict.size <|
+                    Dict.filter (\_ shot -> shot == Shot.Hit ship) board.placedShots
+                currentShipCount = ceiling <| ((toFloat <| startCellCount - currentCellCount) / (toFloat <| Ship.length ship))
+            in
+                (ship, currentShipCount)
+
+        ungroup : List (a, Int) -> List a
+        ungroup = List.concatMap (\ (a, count) -> List.repeat count a)
+    in
+        ungroup <| List.map f <| (List.Extra.gatherEquals board.ships)

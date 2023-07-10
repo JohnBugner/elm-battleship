@@ -82,6 +82,7 @@ appView app =
                         [ Html.text (if app.isSolving then "Stop" else "Solve")
                         ]
                     ]
+                , Html.div [] [ Html.text <| "Ships Left : " ++ (Debug.toString <| Board.shipsLeft board) ]
                 , Html.div [] [ Html.text <| "Shots : " ++ (Debug.toString <| Dict.size board.placedShots) ]
                 , Html.div
                     []
